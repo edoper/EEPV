@@ -79,12 +79,72 @@ tabix -p vcf all.snps.genome.vcf.pass.gz
 # Vcf merging.
 bcftools merge -O z -o snps.vcf.gz all.snps.exome.vcf.pass.gz all.snps.genome.vcf.pass.gz
 ```
-
-
-
-
-
-
+After obtaining the indels and SNVs vcf files, we will use an auxiliary perl script `cleaning-gnomaAD.pl` to extract specific information from the vcf files. The final output is a bed file that will be used later.
+```
+# Gunzip vcfs.
+# Extracting information from indels vcf.
+perl cleaning-gnomaAD.pl indels.vcf indels.gnomad.bed
+# Reformat snps, split by chromosome, and extract information.
+zcat snps.vcf.gz | awk '!/^#/{print>$1}'
+for F in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y; do
+	echo "working with $F"
+	perl cleaning-gnomaAD.pl $F $F.bed
+done
+# Merge snps.
+cat 1.bed 2.bed 3.bed 4.bed 5.bed 6.bed 7.bed 8.bed 9.bed 10.bed 11.bed 12.bed 13.bed 14.bed 15.bed 16.bed 17.bed 18.bed 19.bed 20.bed 21.bed 22.bed X.bed Y.bed >cat.snps.bed
+grep -v -P '^chr' cat.snps.bed >snv.gnomad.bed
+# Format change.
+awk -F"\t" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5":"$6":"$7}' snv.gnomad.bed >snv.gnomad.bed
+awk -F"\t" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5":"$6":"$7}' indels.gnomad.bed >indel.gnomad.bed   
+```
+### Part 2: Pathogenic variants from ClinVar and HGMD.
+The second part requires datasets downloaded from ClinVar `variant_summary.txt` (https://www.ncbi.nlm.nih.gov/clinvar/) and HGMD `hg19_hgmd.txt` (http://www.hgmd.cf.ac.uk/ac/index.php). We use the auxiliary scripts `source2input-hgmd.pl` and `source2input-clinvar.pl` to generate bed files with SNVs and indels.
+```
+# Extracting data
+perl source2input-hgmd.pl
+perl source2input-clinvar.pl 
+perl -pi -e 's/\;/\|/g' snv.clinvar.bed
+perl -pi -e 's/\;/\|/g' indel.clinvar.bed
+perl -pi -e 's/\?/o/g' snv.clinvar.bed
+perl -pi -e 's/\?/o/g' indel.clinvar.bed
+# Change chromosomes into a numeric format
+perl -pi -e 's/^X\t/23\t/g' snv.clinvar.bed
+perl -pi -e 's/^X\t/23\t/g' indel.clinvar.bed
+perl -pi -e 's/^X\t/23\t/g' snv.hgmd.bed
+perl -pi -e 's/^X\t/23\t/g' indel.hgmd.bed
+perl -pi -e 's/^Y\t/24\t/g' snv.clinvar.bed
+perl -pi -e 's/^Y\t/24\t/g' indel.clinvar.bed
+perl -pi -e 's/^Y\t/24\t/g' snv.hgmd.bed
+perl -pi -e 's/^Y\t/24\t/g' indel.hgmd.bed
+# Merge ClinVar and HGMD datasets.
+cat snv.clinvar.bed snv.hgmd.bed >snv.patogenic.bed
+cat indel.clinvar.bed indel.hgmd.bed >indel.patogenic.bed
+```
+Here we use an auxiliar script called `multiple-column-sort.pl`, the output has the same name as the input with a `.sorted` suffix.
+```
+perl multiple-column-sort.pl snv.patogenic.bed 2n 1n
+perl multiple-column-sort.pl indel.patogenic.bed 2n 1n
+# Removing MT and reformat.
+grep -v -P '(^MT)|(\tna\tna\t)' snv.patogenic.bed.sorted >snv.patogenic.ungrouped
+grep -v -P '(^MT)|(\tna\tna\t)' indel.patogenic.bed.sorted >indel.patogenic.ungrouped
+perl -pi -e 's/\,/_THIS_IS_A_COMMA_/g' snv.patogenic.ungrouped
+perl -pi -e 's/\,/_THIS_IS_A_COMMA_/g' indel.patogenic.ungrouped
+# Group to get unique rows.
+bedtools groupby -i snv.patogenic.ungrouped -g 1,2,3 -c 4,5 -o collapse,collapse >input.patogenic.snv
+bedtools groupby -i indel.patogenic.ungrouped -g 1,2,3 -c 4,5 -o collapse,collapse >input.patogenic.indel
+bedtools groupby -i snv.gnomad.bed -g 1,2,3 -c 4,5 -o collapse,collapse >input.gnomad.snv
+bedtools groupby -i indel.gnomad.bed -g 1,2,3 -c 4,5 -o collapse,collapse >input.gnomad.indel
+# Replace commas.
+perl -pi -e 's/\,/;/g' input.patogenic.snv
+perl -pi -e 's/\,/;/g' input.patogenic.indel
+perl -pi -e 's/\,/;/g' input.gnomad.snv
+perl -pi -e 's/\,/;/g' input.gnomad.indel
+# Reformat with original commas and chromosomes from phenotypes.
+perl -pi -e 's/_THIS_IS_A_COMMA_/\,/g' input.patogenic.snv
+perl -pi -e 's/_THIS_IS_A_COMMA_/\,/g' input.patogenic.indel
+#perl -pi -e 's/\A23\t/\AX\t/g' input.patogenic.snv
+#perl -pi -e 's/\A24\t/\AY\t/g' input.patogenic.indel
+```
 
 
 - **Download**: Download the repository and uncompress the db folder contents. Make sure you have installed the Perl modules “*Data::Dumper*” and “*List::MoreUtils*” and the R packages "*ggplot2*", "*readr*" and "*ggrepel*" before running the code. 
