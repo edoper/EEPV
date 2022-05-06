@@ -32,7 +32,7 @@ bgzip -c all.indels.genome.vcf >all.indels.genome.vcf.gz
 tabix -p vcf all.indels.genome.vcf.gz
 ```
 
-Since the GnomAD exome data is divided by chromosomes, we merge it and create a final vcf file.
+Since the GnomAD exome data is divided by chromosomes, we merge them and create a merged vcf file.
 ```
 # Exome vcf merging
 bcftools concat -O z -o all.indels.exome.vcf.gz 1.indels.exome.vcf.gz 2.indels.exome.vcf.gz 3.indels.exome.vcf.gz 4.indels.exome.vcf.gz 5.indels.exome.vcf.gz 6.indels.exome.vcf.gz 7.indels.exome.vcf.gz 8.indels.exome.vcf.gz 9.indels.exome.vcf.gz 10.indels.exome.vcf.gz 11.indels.exome.vcf.gz 12.indels.exome.vcf.gz 13.indels.exome.vcf.gz 14.indels.exome.vcf.gz 15.indels.exome.vcf.gz 16.indels.exome.vcf.gz 17.indels.exome.vcf.gz 18.indels.exome.vcf.gz 19.indels.exome.vcf.gz 20.indels.exome.vcf.gz 21.indels.exome.vcf.gz 22.indels.exome.vcf.gz X.indels.exome.vcf.gz Y.indels.exome.vcf.gz
@@ -53,7 +53,32 @@ Finally, we merge both genome and exome indels.
 # Vcf merging.
 bcftools merge -O z -o indels.vcf.gz all.indels.exome.pass.vcf.gz all.indels.genome.pass.vcf.gz
 ```
+We repeat the same process with SNVs.
+```
+# Extracting SNVs.
+for S in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y; do
+	echo "working with $S"
+	bcftools view --types snps gnomad.exomes.r2.1.1.sites.$S.vcf.bgz >$S.snps.exome.vcf
+	bgzip -c $S.snps.exome.vcf >$S.snps.exome.vcf.gz
+	tabix -p vcf $S.snps.exome.vcf.gz
+done
+bcftools view --types snps gnomad.genomes.r2.1.1.exome_calling_intervals.sites.vcf.bgz >all.snps.genome.vcf
+bgzip -c all.snps.genome.vcf >all.snps.genome.vcf.gz
+tabix -p vcf all.snps.genome.vcf.gz
 
+# Concatenating exome SNVs.
+bcftools concat -O z -o all.snps.exome.vcf.gz 1.snps.exome.vcf.gz 2.snps.exome.vcf.gz 3.snps.exome.vcf.gz 4.snps.exome.vcf.gz 5.snps.exome.vcf.gz 6.snps.exome.vcf.gz 7.snps.exome.vcf.gz 8.snps.exome.vcf.gz 9.snps.exome.vcf.gz 10.snps.exome.vcf.gz 11.snps.exome.vcf.gz 12.snps.exome.vcf.gz 13.snps.exome.vcf.gz 14.snps.exome.vcf.gz 15.snps.exome.vcf.gz 16.snps.exome.vcf.gz 17.snps.exome.vcf.gz 18.snps.exome.vcf.gz 19.snps.exome.vcf.gz 20.snps.exome.vcf.gz 21.snps.exome.vcf.gz 22.snps.exome.vcf.gz X.snps.exome.vcf.gz Y.snps.exome.vcf.gz
+tabix -p vcf all.snps.exome.vcf.gz
+
+# PASS filtering.
+bcftools view -O z -f 'PASS' -o all.snps.exome.vcf.pass.gz all.snps.exome.vcf.gz
+bcftools view -O z -f 'PASS' -o all.snps.genome.vcf.pass.gz all.snps.genome.vcf.gz
+tabix -p vcf all.snps.exome.vcf.pass.gz
+tabix -p vcf all.snps.genome.vcf.pass.gz
+
+# Vcf merging.
+bcftools merge -O z -o snps.vcf.gz all.snps.exome.vcf.pass.gz all.snps.genome.vcf.pass.gz
+```
 
 
 
