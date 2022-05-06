@@ -16,17 +16,18 @@ We require bcftools (https://samtools.github.io/bcftools/bcftools.html) and tabi
 
 ### Part 1: GnomAD
 After downloading the data, we begin extracting the indels to make a consolidated vcf for further processing.
-`# Extracting indels from GnomAD exomes.`
-`for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y; do`
-`	echo "working with $K"`
-`	bcftools view --types indels gnomad.exomes.r2.1.1.sites.$K.vcf.bgz >$K.indels.exome.vcf`
-`	bgzip -c $K.indels.exome.vcf >$K.indels.exome.vcf.gz`
-`	tabix -p vcf $K.indels.exome.vcf.gz`
-`done`
-`# Extracting indels from GnomAD genomes.`
-`bcftools view --types indels gnomad.genomes.r2.1.1.exome_calling_intervals.sites.vcf.bgz >all.indels.genome.vcf`
-`bgzip -c all.indels.genome.vcf >all.indels.genome.vcf.gz`
-`tabix -p vcf all.indels.genome.vcf.gz`
+
+`# Extracting indels from GnomAD exomes.
+for K in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y; do
+	echo "working with $K"
+	bcftools view --types indels gnomad.exomes.r2.1.1.sites.$K.vcf.bgz >$K.indels.exome.vcf
+	bgzip -c $K.indels.exome.vcf >$K.indels.exome.vcf.gz
+	tabix -p vcf $K.indels.exome.vcf.gz
+done
+# Extracting indels from GnomAD genomes.
+bcftools view --types indels gnomad.genomes.r2.1.1.exome_calling_intervals.sites.vcf.bgz >all.indels.genome.vcf
+bgzip -c all.indels.genome.vcf >all.indels.genome.vcf.gz
+tabix -p vcf all.indels.genome.vcf.gz`
 
 - **Download**: Download the repository and uncompress the db folder contents. Make sure you have installed the Perl modules “*Data::Dumper*” and “*List::MoreUtils*” and the R packages "*ggplot2*", "*readr*" and "*ggrepel*" before running the code. 
 - **Command**: From terminal and inside the repository directory run:
