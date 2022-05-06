@@ -4,9 +4,9 @@ A framework to identify and visualize Exons Enriched with Pathogenic Variants
 ## Introduction
 [Insertar abstract del paper aqui.]
 ## Contents
-- **Content 1**: Expected output files from the examples provided in this repository.
-- **Content 2**: Perl script able to format gene-family alignments “.clw” or gene sequences “.fasta” and map missense variants over them.
-- **Content 3**: R script able to perform missense burden analysis, PER identification and missense burden plots.  	
+- **Content 1**: Asd.
+- **Content 2**: Asd.
+- **Content 3**: Asd.	
 
 ## Pipeline
 The pipeline for EEPV starts with the downloaded GnomAD data (https://gnomad.broadinstitute.org/).
@@ -31,6 +31,36 @@ bcftools view --types indels gnomad.genomes.r2.1.1.exome_calling_intervals.sites
 bgzip -c all.indels.genome.vcf >all.indels.genome.vcf.gz
 tabix -p vcf all.indels.genome.vcf.gz
 ```
+
+Since the GnomAD exome data is divided by chromosomes, we merge it and create a final vcf file.
+```
+# Exome vcf merging
+bcftools concat -O z -o all.indels.exome.vcf.gz 1.indels.exome.vcf.gz 2.indels.exome.vcf.gz 3.indels.exome.vcf.gz 4.indels.exome.vcf.gz 5.indels.exome.vcf.gz 6.indels.exome.vcf.gz 7.indels.exome.vcf.gz 8.indels.exome.vcf.gz 9.indels.exome.vcf.gz 10.indels.exome.vcf.gz 11.indels.exome.vcf.gz 12.indels.exome.vcf.gz 13.indels.exome.vcf.gz 14.indels.exome.vcf.gz 15.indels.exome.vcf.gz 16.indels.exome.vcf.gz 17.indels.exome.vcf.gz 18.indels.exome.vcf.gz 19.indels.exome.vcf.gz 20.indels.exome.vcf.gz 21.indels.exome.vcf.gz 22.indels.exome.vcf.gz X.indels.exome.vcf.gz Y.indels.exome.vcf.gz
+tabix -p vcf all.indels.exome.vcf.gz
+```
+
+We filter the generated vcfs to keep only variants with the PASS label.
+```
+# PASS variant filtering.
+bcftools view -O z -f 'PASS' all.indels.exome.vcf.gz >all.indels.exome.pass.vcf.gz
+bcftools view -O z -f 'PASS' all.indels.genome.vcf.gz >all.indels.genome.pass.vcf.gz
+tabix -p vcf all.indels.exome.pass.vcf.gz
+tabix -p vcf all.indels.genome.pass.vcf.gz
+```
+
+Finally, we merge both genome and exome indels.
+```
+# Vcf merging.
+bcftools merge -O z -o indels.vcf.gz all.indels.exome.pass.vcf.gz all.indels.genome.pass.vcf.gz
+```
+
+
+
+
+
+
+
+
 
 - **Download**: Download the repository and uncompress the db folder contents. Make sure you have installed the Perl modules “*Data::Dumper*” and “*List::MoreUtils*” and the R packages "*ggplot2*", "*readr*" and "*ggrepel*" before running the code. 
 - **Command**: From terminal and inside the repository directory run:
