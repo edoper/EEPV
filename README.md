@@ -146,44 +146,5 @@ perl -pi -e 's/_THIS_IS_A_COMMA_/\,/g' input.patogenic.indel
 #perl -pi -e 's/\A24\t/\AY\t/g' input.patogenic.indel
 ```
 
-
-- **Download**: Download the repository and uncompress the db folder contents. Make sure you have installed the Perl modules “*Data::Dumper*” and “*List::MoreUtils*” and the R packages "*ggplot2*", "*readr*" and "*ggrepel*" before running the code. 
-- **Command**: From terminal and inside the repository directory run:
-
-  `$ perl Part-1-missense-aligner.pl`
-
-- **Output**: In the db/ folder, two files will be produced per aligment, one of them accounting for clinvar-hgmd missense variant mapping over the alignment (family-name.clinvar-hgmd.binary) and the other accounting for gnomad missense variants mapping over the same alignment (family-name.gnomad.binary).
-- **Output legend**: The output file's *family-name.clinvar-hgmd.binary* and the *family-name.gnomad.binary* have the following structure:
-  1. *Index*: Absolute position of the aligned aminoacids.
-  2. *Gene-Sequence*: Canonical protein sequence in the format: “aminoacid_position” for each of the genes belonging to the family (one per column).
-  4. *Parazscore*: Paralog score observed for that Index position.
-  5. *Gene-Binary Annotation*: At least one missense variant observed at corresponding aminoacid (YES=1, NO=0). One column per gene-family member.
-  6. *Gene:Disease*: Gene ID coupled with the corresponding disease association observed. This is a collapsed field and more than one gene can have disease associations at the same index positions. Since no disease associations are present in the *family-name.gnomad.binary* file, the tag "GeneID:gnomad" is collapsed on this column. 
-### Part 2:
-- **Command**: From terminal and inside the repository directory run:
-
-  `$ Rscript Part-2-burden-analysis.R`
-
-- **Output**: The R script will calculate the missense burden analysis over the whole alignment and identify PERs when the difference between the burden of the general population’s missense variants and patient’s pathogenic missense variants becomes significant. Burdens plots are produced in the same format as the one shown in the PER viewer (http://per.broadinstitute.org/). The complete burden analysis are written in a single file with “bin9.stats” extension denoting the 9 amino acid bin size used for the burden analysis. 
-- **Output legend**: The file *family-name.bin9.stats* has the following structure:
-  1. *Index*: Absolute position of the aligned aminoacids.
-  2. *Sequence*: Canonical protein sequence in the format: “aminoacid_position” for each of the genes belonging to the family (one per column).
-  3. *Parazscore*: Paralog score observed for that Index position.
-  4. *Adj_bin_count*: Adjusted burden of missense variants observed in the general population.
-  5. *DM_adj_bin_count*: Adjusted burden of missense variants observed in patients from CLinvar-HGMD (Pathogenic, Likely Pathogenic and/or Disease Mutations).
-  7. *Gene:Disease*: Gene ID coupled with the corresponding disease association observed. This is a collapsed field and more than one gene can have disease associations at the same index positions.  
-  9. *fisher.p*: Nominal p-value from fisher exact test. 
-  10. *or*: odd ratio.
-  11. *ci1*: 95% lower confidence interval.
-  12. *ci2*: 95% upper confidence interval.
-  13. *adj.p*: Bonferroni adjusted p-value considering the amount of bins tested in the alignment (the longer the alignment, lower the alpha).
-  14. *log.adj.p*: Logarithm of the adjusted p-value.
-  15. *aa.per*: Index position belongs to a PER.
-  16. *proxy*: Index position is the anchor of the bin tested. The bin size is 9 aminoacids, with the structure -4aa anchor-aa +4aa. Anchor aminoacid determine the stats of the whole bin. 
-  18. *per.tag*: Number of PER. If overlapping bins are significant, the bins are fused together keeping the strongest proxy. 
-  19. *per.start*: Start index Position of the PER.
-  20. *per.end*: End index position of the PER.
-  21. *size*: Aminoacid size of corresponding PER.
-  
  ## Final remarks
-After running the provided example the user should be able to produce the files contained in "*Example-output*" folder. The complete study and detailed method description is currently available as a preprint entitled: “Identification of pathogenic variant enriched regions across genes and gene families” (https://www.biorxiv.org/content/10.1101/641043v1).
+Interpretation of the results here.
