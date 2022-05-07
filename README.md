@@ -145,6 +145,138 @@ perl -pi -e 's/_THIS_IS_A_COMMA_/\,/g' input.patogenic.indel
 #perl -pi -e 's/\A23\t/\AX\t/g' input.patogenic.snv
 #perl -pi -e 's/\A24\t/\AY\t/g' input.patogenic.indel
 ```
+### Part 3: Transcript mapping pathogenic + gnomAD
+Exon data was downloaded from UCSC. We provide two examples, the APP gene located on chr21 and the GABRB2 gene located on chr5, on a custom `*.map` format.
+```
+for C in 5 21; do
+	echo "working with $C"
+	awk -F"\t" 'BEGIN{OFS="\t"}{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}' chr$C.map >$C.backbone
+done
+```
+From the `*.map` file we generate a `*.backbone` file, and we use two auxiliary scripts, one for SNVs, and another for indels.
+```
+perl mapping.snvs.pl
+mkdir map-snv
+for C in 5 21; do
+	mv ${C}.map ./map-snv/
+done
 
- ## Final remarks
+perl mapping.indel.pl
+mkdir map-indel
+for C in 5 21; do
+	mv ${C}.map ./map-indel/
+done
+```
+We have created two different folders, one for SNVs and another for indels. Now we generate `*.map` files for each chromosome in the two created folders, group the variants in each, and count the variants in each exon.
+```
+for d in map-snv map-indel; do
+cd ${d}
+for I in 5 21; do 
+	echo "chr $I"
+	perl -pi -e 's/,/#/g' $I.map
+	#bedtools groupby -i chr$I.map -g 1,2,3,10,9,8 -c 4,4,4,16,21,22,24 -o count,min,max,sum,sum,sum,collapse >chr$I.counts
+	bedtools groupby -i $I.map -g 1,2,3,10,9,8 -c 4,4,4,16,16,20,22 -o count,min,max,sum,sum,sum,collapse >chr$I.counts
+	perl -pi -e 's/\|/;/g' chr$I.counts;
+	perl -pi -e 's/,/;/g' chr$I.counts;
+	perl -pi -e 's/#/,/g' chr$I.counts;
+	perl -pi -e 's/0;//g' chr$I.counts;
+	perl -pi -e 's/;0\n/\n/g' chr$I.counts;
+	perl -pi -e 's/\t;/\t/g' chr$I.counts;
+	awk -F"\t" '{print $1"\t"$2}' chr$I.counts | sort | uniq -c | awk '{print $1"\t"$2}' >chr$I.genes
+	perl -pi -e 's/#/,/g' $I.map;
+	echo "done with chr$I";
+done
+cd ..
+done
+```
+
+### Part 4: Exome enrichment testing
+Here we check for variant enrichment on each exon. We check for SNVs enrichment first, and indel enrichment second. We use two auxiliary scripts, `counting.by.exons.pl` and `testing.exons.R`.
+```
+# SNVs.
+cd map-snv
+cat *.counts >all-exon.txt
+cat *.genes | awk -F"\t" '{print $2}' >all-genes.txt
+cp ../counting.by.exons.pl ./
+cp ../testing.exons.R ./
+perl counting.by.exons.pl
+Rscript testing.exons.R
+cd ..
+# Indels.
+cd map-indel
+cat *.counts >all-exon.txt
+cat *.genes | awk -F"\t" '{print $2}' >all-genes.txt
+cp ../counting.by.exons.pl ./
+cp ../testing.exons.R ./
+perl counting.by.exons.pl
+Rscript testing.exons.R
+cd ..
+```
+We extract the results using the auxiliary script `results.R`
+```
+Rscript results.R
+```
+
+### Part 5: Burden analysis
+We want to analyze the effect of each variant on each exon. Here we use the auxiliary script `burden-analysis1.R` which does the analysis.
+```
+for i in map-snv map-indel; do
+cd ${i}
+for ii in 5 21; do
+mkdir chr${ii}
+cp ${ii}.map ./chr${ii}
+done
+cp ../burden-analysis1.R ./
+Rscript burden-analysis1.R
+cd ..
+done
+```
+### Part 6: Plotting results
+The final part is plotting the results.
+```
+for i in map-snv map-indel; do
+cd ${i}
+mkdir all-gene-burden-main-results
+mkdir all-genes-burden-introns-input
+mv ./chr5/*.burden ./all-gene-burden-main-results/
+mv ./chr21/*.burden ./all-gene-burden-main-results/
+cp ../add.introns.pl ./all-gene-burden-main-results/
+cd all-gene-burden-main-results
+perl add.introns.pl
+cd ..
+cd ..
+done
+
+# Esto escribe resultados en all-genes-burden-introns-input
+# In snv
+cp toplot-snv.pl ./map-snv/all-genes-burden-introns-input
+cd ./map-snv/all-genes-burden-introns-input
+mkdir plot-snv
+perl toplot-snv.pl
+cp *.input ./plot-snv
+cp -r plot-snv ../..
+cd ../..
+# In indel
+cp toplot-indel.pl ./map-indel/all-genes-burden-introns-input
+cd ./map-indel/all-genes-burden-introns-input
+mkdir plot-indel
+perl toplot-indel.pl
+cp *.input ./plot-indel
+cp -r plot-indel ../..
+cd ../..
+# Esto escribe resultados en plot-snv y plot-indel
+
+for i in snv indel; do
+cd plot-${i}
+mv 5.input GABRB2.input
+mv 21.input APP.input
+cd ..
+done
+```
+After processing the data, we use the final r script `plots.R` to generate PDF plots for APP and GABRB2.
+```
+Rscript plots.R
+```
+
+## Final remarks
 Interpretation of the results here.
