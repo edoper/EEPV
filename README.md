@@ -2,7 +2,9 @@
 A framework to identify and visualize Exons Enriched with Pathogenic Variants
 
 ## Introduction
-[Insertar abstract del paper aqui.]
+
+Using publicly available patient and general population variants we developed a framework to identify exons significantly enriched with pathogenic variation on a genome-wide level. We detected 179 and 79 genes with an exon enriched for pathogenic and likely pathogenic SNV and INDELs, respectively. All these exons harbor >50% of all pathogenic variation observed within their corresponding gene. Our framework will facilitate efficient candidate gene selection for the development of exon-skipping therapies.
+
 ## Contents
 - **Content 1**: Asd.
 - **Content 2**: Asd.
