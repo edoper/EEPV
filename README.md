@@ -248,9 +248,7 @@ perl add.introns.pl
 cd ..
 cd ..
 done
-
-# Esto escribe resultados en all-genes-burden-introns-input
-# In snv
+# Creating input to plot snvs
 cp toplot-snv.pl ./map-snv/all-genes-burden-introns-input
 cd ./map-snv/all-genes-burden-introns-input
 mkdir plot-snv
@@ -258,7 +256,7 @@ perl toplot-snv.pl
 cp *.input ./plot-snv
 cp -r plot-snv ../..
 cd ../..
-# In indel
+# Creating input to plot indels
 cp toplot-indel.pl ./map-indel/all-genes-burden-introns-input
 cd ./map-indel/all-genes-burden-introns-input
 mkdir plot-indel
@@ -266,8 +264,7 @@ perl toplot-indel.pl
 cp *.input ./plot-indel
 cp -r plot-indel ../..
 cd ../..
-# Esto escribe resultados en plot-snv y plot-indel
-
+# Renaming input to plot.
 for i in snv indel; do
 cd plot-${i}
 mv 5.input GABRB2.input
