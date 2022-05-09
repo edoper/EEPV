@@ -148,7 +148,7 @@ perl -pi -e 's/_THIS_IS_A_COMMA_/\,/g' input.patogenic.indel
 #perl -pi -e 's/\A24\t/\AY\t/g' input.patogenic.indel
 ```
 ### Part 3: Transcript mapping pathogenic + gnomAD
-Exon data was downloaded from UCSC. We provide two examples, the APP gene located on chr21 and the GABRB2 gene located on chr5, on a custom `*.map` format. We also provide an abridged version of `input.gnomad.snv` with chr5 and chr21 to be used on this example.
+Exon data was downloaded from UCSC. We provide two examples, the APP gene located on chr21 and the GABRB2 gene located on chr5, on a custom `*.map` format. We also provide an abridged version of `input.gnomad.snv` with chr5 and chr21 to be used on this example, and abridged versions of `input.patogenic.snv` and `input.patogenic.indel`.
 ```
 for C in 5 21; do
 	echo "working with $C"
