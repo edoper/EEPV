@@ -6,9 +6,12 @@ A framework to identify and visualize Exons Enriched with Pathogenic Variants
 Using publicly available patient and general population variants we developed a framework to identify exons significantly enriched with pathogenic variation on a genome-wide level. We detected 179 and 79 genes with an exon enriched for pathogenic and likely pathogenic SNV and INDELs, respectively. All these exons harbor >50% of all pathogenic variation observed within their corresponding gene. Our framework will facilitate efficient candidate gene selection for the development of exon-skipping therapies.
 
 ## Contents
-- **Content 1**: Asd.
-- **Content 2**: Asd.
-- **Content 3**: Asd.	
+- **Content 1**: Part 1: GnomAD.
+- **Content 2**: Part 2: Pathogenic variants from ClinVar and HGMD.
+- **Content 3**: Part 3: Transcript mapping pathogenic + gnomAD.	
+- **Content 4**: Part 4: Exome enrichment testing.
+- **Content 5**: Part 5: Burden analysis.
+- **Content 6**: Part 6: Plotting results.
 
 ## Pipeline
 The pipeline for EEPV starts with the downloaded GnomAD data (https://gnomad.broadinstitute.org/).
